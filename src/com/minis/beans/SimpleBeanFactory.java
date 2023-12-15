@@ -1,27 +1,35 @@
 package com.minis.beans;
 
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class SimpleBeanFactory implements BeanFactory{
-    Map<String, Object> singletonMap = new HashMap<>();
-
-    @Override
-    public Object getBean(String beanName){
-        //TODO 为什么这个方法不判断Bean是否存在
-//        if(!beanNames.contains(beanName)) {
-//            throw new Exception("No bean found");
-//        }
-        return singletonMap.get(beanName);
-    }
+public class SimpleBeanFactory extends DefaultSingletonBeanRegistry implements BeanFactory{
+    private Map<String, BeanDefinition> beanDefinitions = new ConcurrentHashMap<>(256);
 
     @Override
-    public void registerBeanDefinition(BeanDefinition beanDefinition) {
-        try {
-            singletonMap.put(beanDefinition.getId(), Class.forName(beanDefinition.getClassName()).newInstance());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    public Object getBean(String beanName) throws Exception {
+        Object singleton = this.singletons.get(beanName);
+        if(singletons == null) {
+            BeanDefinition beanDefinition = beanDefinitions.get(beanName);
+            if(beanDefinition == null) {
+                throw new Exception("no Bean");
+            }
+            singleton = Class.forName(beanDefinition.getClassName()).newInstance();
+            this.registerSingleton(beanName, singleton);
         }
+        return singletons.get(beanName);
     }
+
+    @Override
+    public Boolean containsBean(String name) {
+        return containsSingleton(name);
+    }
+
+    @Override
+    public void registerBean(String beanName, Object obj) {
+        registerSingleton(beanName,obj);
+    }
+
+    public void registerBeanDefinition(BeanDefinition beanDefinition) { this.beanDefinitions.put(beanDefinition.getId(), beanDefinition); }
 }

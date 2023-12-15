@@ -17,7 +17,7 @@ public class ClassPathXmlApplicationContext{
     }
 
 
-    public Object getBean(String beanName){
+    public Object getBean(String beanName) throws Exception {
         return beanFactory.getBean(beanName);
     }
 }
